@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  Patient
+  Provider
+  Admin
+}
+
+enum AccountStatus {
+  Active
+  Disabled
+  PendingVerification
+}
+
+model User {
+  id              String        @id @default(uuid())
+  firstName       String
+  middleName      String?
+  lastName        String
+  preferredName   String?
+  dateOfBirth     DateTime
+  gender          String?
+  userRole        UserType
+  accountStatus   AccountStatus @default(PendingVerification)
+  isMinor         Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  auth            UserAuth?
+  contacts        UserContact[]
+  addresses       UserAddress[]
+  insurance       UserInsurance[]
+  providers       UserProvider[]
+}
+
+model UserAuth {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id])
+  username               String   @unique
+  passwordHash           String
+  twoFactorEnabled       Boolean  @default(false)
+  lastLoginTimestamp     DateTime?
+  failedLoginAttempts    Int      @default(0)
+  accountLockedUntil     DateTime?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model UserContact {
+  id                        String   @id @default(uuid())
+  userId                    String
+  user                      User     @relation(fields: [userId], references: [id])
+  primaryEmail              String   @unique
+  secondaryEmail            String?
+  primaryPhone              String
+  secondaryPhone            String?
+  emergencyContactName      String
+  emergencyContactPhone     String
+  emergencyContactRelation  String
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+model UserAddress {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  street       String
+  city         String
+  state        String
+  zipCode      String
+  country      String   @default("United States")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model HealthcareProvider {
+  id           String   @id @default(uuid())
+  providerName String
+  specialty    String?
+  email        String?
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model UserProvider {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  providerId    String
+  provider      HealthcareProvider @relation(fields: [providerId], references: [id])
+  relationship  String?
+  createdAt     DateTime @default(now())
+}
+

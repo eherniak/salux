@@ -1,0 +1,1 @@
+export default function Page() { return (<div className='p-10 text-gray-800'><h1 className='text-3xl font-bold capitalize'>profile</h1><p className='mt-4 text-gray-600'>This is the profile page.</p></div>); }
