@@ -1,42 +1,87 @@
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcrypt";
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
     try {
-        const data = await req.json();
-        const hashed = await bcrypt.hash(data.password, 10);
+        const body = await req.json();
 
-        const user = await prisma.user.create({
-            data: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                dateOfBirth: new Date(data.dateOfBirth),
-                gender: "Unspecified",
-                userRole: "Patient",
-                accountStatus: "Active",
-                auth: {
-                    create: {
-                        username: data.username,
-                        passwordHash: hashed,
-                    },
-                },
-                contacts: {
-                    create: {
-                        primaryEmail: data.email,
-                        primaryPhone: "N/A",
-                        emergencyContactName: "N/A",
-                        emergencyContactPhone: "N/A",
-                        emergencyContactRelation: "N/A",
-                    },
-                },
-            },
-            include: { auth: true },
+        const {
+            firstName,
+            middleName,
+            lastName,
+            preferredName,
+            dateOfBirth,
+            gender,
+            email,
+            password,
+        } = body;
+
+        if (!email || !password || !firstName || !lastName || !dateOfBirth) {
+            return NextResponse.json(
+                { error: "Missing required fields" },
+                { status: 400 }
+            );
+        }
+
+        // 1. Check if contact email already exists
+        const existing = await prisma.userContact.findUnique({
+            where: { primaryEmail: email },
         });
 
-        return NextResponse.json({ id: user.id });
-    } catch (e: any) {
-        console.error(e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        if (existing) {
+            return NextResponse.json(
+                { error: "Email already registered" },
+                { status: 409 }
+            );
+        }
+
+        // 2. Create user profile
+        const user = await prisma.user.create({
+            data: {
+                firstName,
+                middleName,
+                lastName,
+                preferredName,
+                dateOfBirth: new Date(dateOfBirth),
+                gender,
+                userRole: "Patient",
+            },
+        });
+
+        // 3. Create contact record
+        await prisma.userContact.create({
+            data: {
+                userId: user.id,
+                primaryEmail: email,
+                primaryPhone: "N/A",
+                emergencyContactName: "N/A",
+                emergencyContactPhone: "N/A",
+                emergencyContactRelation: "N/A",
+            },
+        });
+
+        // 4. Hash password
+        const hash = await bcrypt.hash(password, 10);
+
+        // 5. Create authentication record
+        await prisma.userAuth.create({
+            data: {
+                userId: user.id,
+                username: email,
+                passwordHash: hash,
+            },
+        });
+
+        return NextResponse.json(
+            { message: "User registered successfully", userId: user.id },
+            { status: 201 }
+        );
+    } catch (err) {
+        console.error("Registration error:", err);
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        );
     }
 }
