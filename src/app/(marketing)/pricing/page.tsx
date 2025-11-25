@@ -1,4 +1,5 @@
 import Estimator from "@/components/ui/pricing/Estimator";
+
 export default function PricingPage() {
     return (
         <main className="max-w-5xl mx-auto px-4 py-12">
@@ -65,31 +66,25 @@ export default function PricingPage() {
                 </div>
             </section>
 
-            {/* Summary Card */}
+            {/* Summary */}
             <section className="mb-16">
                 <div className="bg-white shadow-sm border p-6 rounded-xl">
                     <h3 className="text-xl font-semibold mb-1">Summary of How It Works</h3>
                     <p className="text-gray-600 mb-4">Clear, scalable pricing</p>
 
                     <ul className="list-disc ml-6 text-gray-700 space-y-2">
-                        <li>
-                            <strong>Basic</strong> = $4.99/month for a single person.
-                        </li>
-                        <li>
-                            <strong>Couple</strong> = $7.99/month for two people (save ~20%).
-                        </li>
-                        <li>
-                            <strong>Family</strong> = $14.99/month for up to 4 users.
-                        </li>
-                        <li>
-                            Any tier can grow by adding <strong>$4.99 per additional user</strong>.
-                        </li>
-                        <li>Predictable and fair: each person costs the same as Basic.</li>
-                        <li>Encourages families & caregiving networks to expand.</li>
+                        <li><strong>Basic</strong> = $4.99/month for a single person.</li>
+                        <li><strong>Couple</strong> = $7.99/month for two people.</li>
+                        <li><strong>Family</strong> = $14.99/month for up to 4 users.</li>
+                        <li>Add unlimited users at <strong>$4.99 each</strong>.</li>
+                        <li>Predictable and fair for any size household.</li>
+                        <li>Designed for families & caregiving networks.</li>
                     </ul>
                 </div>
             </section>
-            <section className="mt-16">
+
+            {/* Estimator (Client Component) */}
+            <section>
                 <Estimator />
             </section>
         </main>
