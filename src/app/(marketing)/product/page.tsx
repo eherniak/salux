@@ -1,3 +1,5 @@
+import Estimator from "@/components/ui/pricing/Estimator";
+
 export default function PricingPage() {
     return (
         <main className="max-w-5xl mx-auto px-4 py-12">
@@ -81,42 +83,9 @@ export default function PricingPage() {
                 </div>
             </section>
 
-            {/* Estimator */}
+            {/* Estimator (Client Component) */}
             <section>
-                <div className="bg-white shadow-sm border p-6 rounded-xl">
-                    <h3 className="text-xl font-semibold mb-1">Estimate Your Monthly Price</h3>
-                    <p className="text-gray-600 mb-4">Choose a plan and adjust people</p>
-
-                    <form className="space-y-4">
-                        <div>
-                            <label className="block font-medium mb-1">Plan</label>
-                            <select className="w-full border rounded-md px-3 py-2">
-                                <option value="basic">Basic ($4.99)</option>
-                                <option value="couple">Couple ($7.99)</option>
-                                <option value="family">Family ($14.99)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block font-medium mb-1">
-                                People: <span id="people-count">1</span>
-                            </label>
-
-                            <input
-                                id="people"
-                                type="range"
-                                min="1"
-                                max="12"
-                                defaultValue="1"
-                                className="w-full"
-                                onInput={(e) =>
-                                    ((document.getElementById("people-count") as HTMLElement).innerText =
-                                        (e.target as HTMLInputElement).value)
-                                }
-                            />
-                        </div>
-                    </form>
-                </div>
+                <Estimator />
             </section>
         </main>
     );
