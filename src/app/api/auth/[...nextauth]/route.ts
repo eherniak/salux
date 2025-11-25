@@ -1,9 +1,9 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
 
-export const authOptions: AuthOptions = {
+const handler = NextAuth({
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -11,33 +11,48 @@ export const authOptions: AuthOptions = {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
             },
+
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
+                const userAuth = await prisma.userAuth.findUnique({
+                    where: {
+                        username: credentials.email, // username = email
+                    },
+                    include: {
+                        user: true,
+                    },
                 });
 
-                if (!user) return null;
+                if (!userAuth) return null;
 
-                const isValid = await compare(credentials.password, user.password);
-                if (!isValid) return null;
+                const valid = await compare(credentials.password, userAuth.passwordHash);
+                if (!valid) return null;
 
                 return {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
+                    id: userAuth.user.id,
+                    email: userAuth.username,
+                    name: userAuth.user.firstName,
                 };
             },
         }),
     ],
-    session: { strategy: "jwt" as const }, // ✅ typed literal
-    secret: process.env.NEXTAUTH_SECRET,
-    pages: {
-        signIn: "/login",
-    },
-};
 
-const handler = NextAuth(authOptions);
+    session: { strategy: "jwt" },
+
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) token.id = user.id;
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) session.user.id = token.id as string;
+            return session;
+        },
+    },
+
+    pages: { signIn: "/login" },
+    secret: process.env.NEXTAUTH_SECRET,
+});
 
 export { handler as GET, handler as POST };
