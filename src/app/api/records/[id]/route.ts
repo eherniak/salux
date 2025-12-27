@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -14,9 +14,12 @@ export async function GET(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        // Await the params Promise
+        const { id } = await params;
+
         const record = await prisma.medicalRecord.findFirst({
             where: {
-                id: params.id,
+                id: id,
                 userId: session.user.id,
             },
         });
