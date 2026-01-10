@@ -1,1 +1,12 @@
-export default function Page() { return (<div className='p-10 text-gray-800'><h1 className='text-3xl font-bold capitalize'>features</h1><p className='mt-4 text-gray-600'>This is the features page.</p></div>); }
+import type { Metadata } from "next";
+import FeaturesPageClient from "@/components/marketing/pages/FeaturesPageClient";
+
+export const metadata: Metadata = {
+  title: "Features",
+  description:
+    "Explore the powerful features of Salux Systems designed for modern healthcare practices.",
+};
+
+export default function Page() {
+  return <FeaturesPageClient />;
+}
